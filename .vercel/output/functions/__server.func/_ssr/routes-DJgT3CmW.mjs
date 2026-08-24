@@ -1,10 +1,12 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { n as require_react } from "../_libs/@radix-ui/react-compose-refs+[...].mjs";
-import { i as require_jsx_runtime, r as Slot, t as Root } from "../_libs/@radix-ui/react-label+[...].mjs";
-import { a as Store, c as Menu, d as House, f as ExternalLink, i as Sunrise, l as MapPinned, m as ArrowRight, n as Wheat, o as ShieldCheck, p as Check, s as PawPrint, t as X, u as Mail } from "../_libs/lucide-react.mjs";
+import { i as require_jsx_runtime, n as Slot, t as Root } from "../_libs/@radix-ui/react-label+[...].mjs";
+import { a as Store, c as Menu, d as LoaderCircle, f as House, h as ArrowRight, i as Sunrise, l as MapPinned, m as Check, n as Wheat, o as ShieldCheck, p as ExternalLink, s as PawPrint, t as X, u as Mail } from "../_libs/lucide-react.mjs";
+import { n as TSS_SERVER_FUNCTION, r as getServerFnById, t as createServerFn } from "./ssr.mjs";
+import { a as requestService, i as TOWNS, n as FACEBOOK_URL, r as MAILTO, t as EMAIL } from "./site-kQ5QAUhw.mjs";
 import { n as clsx, t as cva } from "../_libs/class-variance-authority+clsx.mjs";
 import { t as twMerge } from "../_libs/tailwind-merge.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-BfNiqGRf.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-DJgT3CmW.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function cn(...inputs) {
@@ -67,30 +69,96 @@ var Textarea = import_react.forwardRef(({ className, ...props }, ref) => {
 	});
 });
 Textarea.displayName = "Textarea";
-var FACEBOOK_URL = "https://www.facebook.com/people/Aerial-Allies/61591089806027/";
-var EMAIL = "aerialalliesllc@gmail.com";
-var MAILTO = `mailto:${EMAIL}`;
-var TOWNS = [
-	"Hallam",
-	"Lincoln",
-	"Beatrice",
-	"Crete",
-	"Wilber",
-	"Firth",
-	"Hickman",
-	"Cortland",
-	"Adams",
-	"Sprague",
-	"Roca",
-	"Panama",
-	"Sterling",
-	"Fairbury",
-	"Seward",
-	"Nebraska City"
-];
-function requestService(service) {
-	if (typeof window === "undefined") return;
-	window.dispatchEvent(new CustomEvent("aa:service", { detail: service }));
+var createSsrRpc = (functionId) => {
+	const url = "/_serverFn/" + functionId;
+	const serverFnMeta = { id: functionId };
+	const fn = async (...args) => {
+		return (await getServerFnById(functionId, { origin: "server" }))(...args);
+	};
+	return Object.assign(fn, {
+		url,
+		serverFnMeta,
+		[TSS_SERVER_FUNCTION]: true
+	});
+};
+var SERVICES$1 = {
+	agriculture: "Agriculture",
+	residential: "Residential / inspection",
+	rescue: "Lost pet search",
+	sales: "Buy a drone",
+	other: "Something else"
+};
+var SEND_ERROR = "Could not send right now. Message us on Facebook or email aerialalliesllc@gmail.com.";
+function validate(data) {
+	if (data.honey.trim()) return { ok: true };
+	const name = data.name.trim();
+	const email = data.email.trim();
+	const phone = data.phone.trim();
+	const location = data.location.trim();
+	const pet = data.pet.trim();
+	const message = data.message.trim();
+	if (!name || !message) return {
+		ok: false,
+		error: "Name and a short note are required."
+	};
+	if (!email && !phone) return {
+		ok: false,
+		error: "Leave an email or a phone number so we can reach you."
+	};
+	const serviceLabel = SERVICES$1[data.service] ?? data.service;
+	const subject = data.service === "rescue" ? `Lost pet — ${pet || name} — Aerial Allies` : data.service === "sales" ? `Drone purchase — ${name} — Aerial Allies` : `Flight request — ${serviceLabel} — Aerial Allies`;
+	const payload = {
+		name,
+		email: email || "(no email)",
+		phone: phone || "(no phone)",
+		location: location || "(not given)",
+		need: serviceLabel,
+		message,
+		_subject: subject,
+		_template: "table",
+		_captcha: "false"
+	};
+	if (pet) payload.pet = pet;
+	if (email) payload._replyto = email;
+	return {
+		ok: true,
+		payload
+	};
+}
+async function postToFormSubmit(payload) {
+	const res = await fetch(`https://formsubmit.co/ajax/${EMAIL}`, {
+		method: "POST",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify(payload),
+		signal: AbortSignal.timeout(15e3)
+	});
+	const body = await res.json().catch(() => null);
+	if (!(/confirm|activat/i.test(body?.message ?? "") || res.ok && (body == null || body.success === true || body.success === "true" || /sent|success|thank/i.test(body.message ?? "")))) return {
+		ok: false,
+		error: SEND_ERROR
+	};
+	return { ok: true };
+}
+var sendContact = createServerFn({ method: "POST" }).validator((input) => input).handler(createSsrRpc("3e587c1109a072e229695c96c1580ae6781adecb483cd6de4b99d2b622afcbdd"));
+async function deliverContact(data) {
+	const prepared = validate(data);
+	if (!prepared.ok) return prepared;
+	if (!("payload" in prepared)) return { ok: true };
+	try {
+		const direct = await postToFormSubmit(prepared.payload);
+		if (direct.ok) return direct;
+	} catch {}
+	try {
+		return await sendContact({ data });
+	} catch {
+		return {
+			ok: false,
+			error: SEND_ERROR
+		};
+	}
 }
 var SERVICES = [
 	{
@@ -117,6 +185,7 @@ var SERVICES = [
 function ContactForm() {
 	const [service, setService] = (0, import_react.useState)("agriculture");
 	const [sent, setSent] = (0, import_react.useState)(false);
+	const [sending, setSending] = (0, import_react.useState)(false);
 	const [error, setError] = (0, import_react.useState)("");
 	(0, import_react.useEffect)(() => {
 		const onService = (event) => {
@@ -126,7 +195,7 @@ function ContactForm() {
 		window.addEventListener("aa:service", onService);
 		return () => window.removeEventListener("aa:service", onService);
 	}, []);
-	function onSubmit(event) {
+	async function onSubmit(event) {
 		event.preventDefault();
 		const data = new FormData(event.currentTarget);
 		const name = String(data.get("name") || "").trim();
@@ -135,6 +204,7 @@ function ContactForm() {
 		const location = String(data.get("location") || "").trim();
 		const message = String(data.get("message") || "").trim();
 		const pet = String(data.get("pet") || "").trim();
+		const honey = String(data.get("company") || "");
 		if (!name || !message) {
 			setError("Name and a short note are required.");
 			return;
@@ -143,22 +213,29 @@ function ContactForm() {
 			setError("Leave an email or a phone number so we can reach you.");
 			return;
 		}
-		const serviceLabel = SERVICES.find((item) => item.value === service)?.label ?? service;
-		const lines = [
-			`Name: ${name}`,
-			email ? `Email: ${email}` : null,
-			phone ? `Phone: ${phone}` : null,
-			`Need: ${serviceLabel}`,
-			location ? `Location: ${location}` : null,
-			pet ? `Pet: ${pet}` : null,
-			"",
-			message
-		].filter((line) => line !== null).join("\n");
-		const subject = encodeURIComponent(service === "rescue" ? `Lost pet — ${pet || name} — Aerial Allies` : service === "sales" ? `Drone purchase — ${name} — Aerial Allies` : `Flight request — ${serviceLabel} — Aerial Allies`);
-		const body = encodeURIComponent(lines);
-		window.location.href = `${MAILTO}?subject=${subject}&body=${body}`;
 		setError("");
-		setSent(true);
+		setSending(true);
+		try {
+			const result = await deliverContact({
+				name,
+				email,
+				phone,
+				location,
+				service,
+				pet,
+				message,
+				honey
+			});
+			if (!result.ok) {
+				setError(result.error);
+				return;
+			}
+			setSent(true);
+		} catch {
+			setError(`Could not send right now. Message us on Facebook or email ${EMAIL}.`);
+		} finally {
+			setSending(false);
+		}
 	}
 	if (sent) return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "rounded-xl border border-line bg-paper p-6 sm:p-8",
@@ -177,45 +254,43 @@ function ContactForm() {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 				className: "mt-3 max-w-prose text-ink/80",
 				children: [
-					"If your email app opened, send that message to ",
+					"Your request was sent to ",
 					EMAIL,
-					" and we will get back to you. If it did not, email us or reach us on Facebook — Facebook is the fastest way right now, especially for a lost pet."
+					". We will get back to you. Facebook is still the fastest line after dark, especially for a lost pet."
 				]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				className: "mt-6 flex flex-wrap gap-3",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-						asChild: true,
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
-							href: MAILTO,
-							children: "Email us"
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-						asChild: true,
-						variant: "ink",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
-							href: FACEBOOK_URL,
-							target: "_blank",
-							rel: "noreferrer",
-							children: ["Message on Facebook", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ExternalLink, {})]
-						})
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-						variant: "ink",
-						type: "button",
-						onClick: () => setSent(false),
-						children: "Send another"
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+					asChild: true,
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
+						href: FACEBOOK_URL,
+						target: "_blank",
+						rel: "noreferrer",
+						children: ["Message on Facebook", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ExternalLink, {})]
 					})
-				]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+					variant: "ink",
+					type: "button",
+					onClick: () => setSent(false),
+					children: "Send another"
+				})]
 			})
 		]
 	});
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("form", {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", {
 		onSubmit,
 		className: "rounded-xl border border-line bg-paper p-5 sm:p-8",
-		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+			className: "sr-only",
+			"aria-hidden": "true",
+			children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: ["Company", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+				type: "text",
+				name: "company",
+				tabIndex: -1,
+				autoComplete: "off"
+			})] })
+		}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 			className: "grid gap-5",
 			children: [
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("fieldset", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("legend", {
@@ -246,7 +321,8 @@ function ContactForm() {
 								id: "name",
 								name: "name",
 								autoComplete: "name",
-								required: true
+								required: true,
+								disabled: sending
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
@@ -256,7 +332,8 @@ function ContactForm() {
 								id: "phone",
 								name: "phone",
 								type: "tel",
-								autoComplete: "tel"
+								autoComplete: "tel",
+								disabled: sending
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
@@ -266,7 +343,8 @@ function ContactForm() {
 								id: "email",
 								name: "email",
 								type: "email",
-								autoComplete: "email"
+								autoComplete: "email",
+								disabled: sending
 							})
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
@@ -275,7 +353,8 @@ function ContactForm() {
 							children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
 								id: "location",
 								name: "location",
-								placeholder: "Hallam, Lincoln, Beatrice…"
+								placeholder: "Hallam, Lincoln, Beatrice…",
+								disabled: sending
 							})
 						})
 					]
@@ -286,7 +365,8 @@ function ContactForm() {
 					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
 						id: "pet",
 						name: "pet",
-						placeholder: "Name, color, breed, collar"
+						placeholder: "Name, color, breed, collar",
+						disabled: sending
 					})
 				}) : null,
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
@@ -296,6 +376,7 @@ function ContactForm() {
 						id: "message",
 						name: "message",
 						required: true,
+						disabled: sending,
 						placeholder: service === "rescue" ? "When they went missing, last known spot, terrain — corn, timber, creek, highway…" : service === "sales" ? "Matrice 4T, J70, or J150 — what you want to fly and when you need it." : "Crop, roof, listing photos, storm damage — whatever you need from the air."
 					})
 				}),
@@ -309,7 +390,8 @@ function ContactForm() {
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
 						type: "submit",
 						size: "lg",
-						children: "Send request"
+						disabled: sending,
+						children: sending ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LoaderCircle, { className: "animate-spin" }), "Sending…"] }) : "Send request"
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
 						asChild: true,
 						variant: "ink",
@@ -325,13 +407,13 @@ function ContactForm() {
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 					className: "text-sm text-muted",
 					children: [
-						"We fly when weather and airspace allow. Lost-pet searches come first. You can also email ",
+						"This form emails ",
 						EMAIL,
-						"."
+						" directly. We fly when weather and airspace allow. Lost-pet searches come first."
 					]
 				})
 			]
-		})
+		})]
 	});
 }
 function Field({ id, label, required, children }) {
@@ -1038,9 +1120,13 @@ function Contact() {
 					className: "mt-3 font-display text-2xl font-bold uppercase tracking-[0.04em] text-ink",
 					children: "Request a flight, report a lost pet, or buy a drone."
 				}),
-				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
 					className: "mt-4 max-w-prose text-lg text-ink/80",
-					children: "Fill this out and we will follow up. We sell the DJI Matrice 4T and the EAVision J70 and J150. Email or Facebook — Facebook is still the quickest line after dark when a dog is still out."
+					children: [
+						"Fill this out and it goes straight to ",
+						EMAIL,
+						". We sell the DJI Matrice 4T and the EAVision J70 and J150. Facebook is still the quickest line after dark when a dog is still out."
+					]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
 					href: MAILTO,

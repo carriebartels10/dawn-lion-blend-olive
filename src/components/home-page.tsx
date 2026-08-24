@@ -524,9 +524,9 @@ function Contact() {
             Request a flight, report a lost pet, or buy a drone.
           </h2>
           <p className="mt-4 max-w-prose text-lg text-ink/80">
-            Fill this out and we will follow up. We sell the DJI Matrice 4T and
-            the EAVision J70 and J150. Email or Facebook — Facebook is still
-            the quickest line after dark when a dog is still out.
+            Fill this out and it goes straight to {EMAIL}. We sell the DJI
+            Matrice 4T and the EAVision J70 and J150. Facebook is still the
+            quickest line after dark when a dog is still out.
           </p>
           <a
             href={MAILTO}

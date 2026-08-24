@@ -1,15 +1,11 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { Check, ExternalLink } from "lucide-react";
+import { Check, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  EMAIL,
-  FACEBOOK_URL,
-  MAILTO,
-  type FlightService,
-} from "@/lib/site";
+import { EMAIL, FACEBOOK_URL, type FlightService } from "@/lib/site";
+import { deliverContact } from "@/lib/send-contact";
 import { cn } from "@/lib/utils";
 
 const SERVICES = [
@@ -25,6 +21,7 @@ type ServiceValue = FlightService;
 export function ContactForm() {
   const [service, setService] = useState<ServiceValue>("agriculture");
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -36,7 +33,7 @@ export function ContactForm() {
     return () => window.removeEventListener("aa:service", onService);
   }, []);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const name = String(data.get("name") || "").trim();
@@ -45,6 +42,7 @@ export function ContactForm() {
     const location = String(data.get("location") || "").trim();
     const message = String(data.get("message") || "").trim();
     const pet = String(data.get("pet") || "").trim();
+    const honey = String(data.get("company") || "");
 
     if (!name || !message) {
       setError("Name and a short note are required.");
@@ -55,32 +53,31 @@ export function ContactForm() {
       return;
     }
 
-    const serviceLabel =
-      SERVICES.find((item) => item.value === service)?.label ?? service;
-    const lines = [
-      `Name: ${name}`,
-      email ? `Email: ${email}` : null,
-      phone ? `Phone: ${phone}` : null,
-      `Need: ${serviceLabel}`,
-      location ? `Location: ${location}` : null,
-      pet ? `Pet: ${pet}` : null,
-      "",
-      message,
-    ]
-      .filter((line) => line !== null)
-      .join("\n");
-
-    const subject = encodeURIComponent(
-      service === "rescue"
-        ? `Lost pet — ${pet || name} — Aerial Allies`
-        : service === "sales"
-          ? `Drone purchase — ${name} — Aerial Allies`
-          : `Flight request — ${serviceLabel} — Aerial Allies`,
-    );
-    const body = encodeURIComponent(lines);
-    window.location.href = `${MAILTO}?subject=${subject}&body=${body}`;
     setError("");
-    setSent(true);
+    setSending(true);
+    try {
+      const result = await deliverContact({
+        name,
+        email,
+        phone,
+        location,
+        service,
+        pet,
+        message,
+        honey,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError(
+        `Could not send right now. Message us on Facebook or email ${EMAIL}.`,
+      );
+    } finally {
+      setSending(false);
+    }
   }
 
   if (sent) {
@@ -93,15 +90,11 @@ export function ContactForm() {
           We have your note
         </h3>
         <p className="mt-3 max-w-prose text-ink/80">
-          If your email app opened, send that message to {EMAIL} and we will
-          get back to you. If it did not, email us or reach us on Facebook —
-          Facebook is the fastest way right now, especially for a lost pet.
+          Your request was sent to {EMAIL}. We will get back to you. Facebook is
+          still the fastest line after dark, especially for a lost pet.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Button asChild>
-            <a href={MAILTO}>Email us</a>
-          </Button>
-          <Button asChild variant="ink">
             <a href={FACEBOOK_URL} target="_blank" rel="noreferrer">
               Message on Facebook
               <ExternalLink />
@@ -116,7 +109,16 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-xl border border-line bg-paper p-5 sm:p-8">
+    <form
+      onSubmit={onSubmit}
+      className="rounded-xl border border-line bg-paper p-5 sm:p-8"
+    >
+      <div className="sr-only" aria-hidden="true">
+        <label>
+          Company
+          <input type="text" name="company" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
       <div className="grid gap-5">
         <fieldset>
           <legend className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-ink">
@@ -149,19 +151,38 @@ export function ContactForm() {
 
         <div className="grid gap-5 sm:grid-cols-2">
           <Field id="name" label="Name" required>
-            <Input id="name" name="name" autoComplete="name" required />
+            <Input
+              id="name"
+              name="name"
+              autoComplete="name"
+              required
+              disabled={sending}
+            />
           </Field>
           <Field id="phone" label="Phone">
-            <Input id="phone" name="phone" type="tel" autoComplete="tel" />
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              autoComplete="tel"
+              disabled={sending}
+            />
           </Field>
           <Field id="email" label="Email">
-            <Input id="email" name="email" type="email" autoComplete="email" />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              disabled={sending}
+            />
           </Field>
           <Field id="location" label="Town or section">
             <Input
               id="location"
               name="location"
               placeholder="Hallam, Lincoln, Beatrice…"
+              disabled={sending}
             />
           </Field>
         </div>
@@ -172,6 +193,7 @@ export function ContactForm() {
               id="pet"
               name="pet"
               placeholder="Name, color, breed, collar"
+              disabled={sending}
             />
           </Field>
         ) : null}
@@ -190,6 +212,7 @@ export function ContactForm() {
             id="message"
             name="message"
             required
+            disabled={sending}
             placeholder={
               service === "rescue"
                 ? "When they went missing, last known spot, terrain — corn, timber, creek, highway…"
@@ -207,8 +230,15 @@ export function ContactForm() {
         ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button type="submit" size="lg">
-            Send request
+          <Button type="submit" size="lg" disabled={sending}>
+            {sending ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Sending…
+              </>
+            ) : (
+              "Send request"
+            )}
           </Button>
           <Button asChild variant="ink" size="lg">
             <a href={FACEBOOK_URL} target="_blank" rel="noreferrer">
@@ -218,8 +248,8 @@ export function ContactForm() {
           </Button>
         </div>
         <p className="text-sm text-muted">
-          We fly when weather and airspace allow. Lost-pet searches come first.
-          You can also email {EMAIL}.
+          This form emails {EMAIL} directly. We fly when weather and airspace
+          allow. Lost-pet searches come first.
         </p>
       </div>
     </form>

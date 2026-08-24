@@ -138,6 +138,16 @@ var House = createLucideIcon("house", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var LoaderCircle = createLucideIcon("loader-circle", [["path", {
+	d: "M21 12a9 9 0 1 1-6.219-8.56",
+	key: "13zald"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Mail = createLucideIcon("mail", [["path", {
 	d: "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7",
 	key: "132q7q"
@@ -376,4 +386,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Store as a, Menu as c, House as d, ExternalLink as f, Sunrise as i, MapPinned as l, ArrowRight as m, Wheat as n, ShieldCheck as o, Check as p, TriangleAlert as r, PawPrint as s, X as t, Mail as u };
+export { Store as a, Menu as c, LoaderCircle as d, House as f, ArrowRight as h, Sunrise as i, MapPinned as l, Check as m, Wheat as n, ShieldCheck as o, ExternalLink as p, TriangleAlert as r, PawPrint as s, X as t, Mail as u };
