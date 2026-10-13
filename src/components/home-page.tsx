@@ -30,6 +30,7 @@ export function HomePage() {
       <Frankie />
       <Shop />
       <ServiceArea />
+      <FacebookFeed />
       <Contact />
       <SiteFooter />
     </div>
@@ -506,6 +507,57 @@ function ServiceArea() {
               ))}
             </ul>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+function FacebookFeed() {
+  const pluginSrc =
+    "https://www.facebook.com/plugins/page.php?href=" +
+    encodeURIComponent("https://www.facebook.com/1146505868554366") +
+    "&tabs=timeline&width=500&height=760&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false";
+
+  return (
+    <section id="facebook" className="scroll-mt-24 border-y border-line bg-paper py-20 sm:py-28">
+      <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_500px] lg:gap-16">
+        <div>
+          <p className="font-display text-xs font-semibold uppercase tracking-[0.22em] text-green">
+            From the page
+          </p>
+          <h2 className="mt-3 font-display text-2xl font-bold uppercase tracking-[0.04em] text-ink">
+            What we just posted.
+          </h2>
+          <p className="mt-4 max-w-prose text-lg text-ink/80">
+            New Facebook posts show up here on their own. Photos, flights, and
+            lost-pet updates — same feed as the page, no extra step after you
+            hit Post.
+          </p>
+          <a
+            href={FACEBOOK_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-6 inline-flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-[0.16em] text-green"
+          >
+            Open Aerial Allies on Facebook
+            <ExternalLink className="size-3.5" />
+          </a>
+        </div>
+        <div className="overflow-hidden rounded-xl border border-line bg-mist">
+          <iframe
+            title="Aerial Allies Facebook posts"
+            src={pluginSrc}
+            width="500"
+            height="760"
+            className="h-[760px] w-full max-w-[500px] bg-paper"
+            style={{ border: "none", overflow: "hidden" }}
+            scrolling="no"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            allowFullScreen
+            loading="lazy"
+          />
         </div>
       </div>
     </section>
