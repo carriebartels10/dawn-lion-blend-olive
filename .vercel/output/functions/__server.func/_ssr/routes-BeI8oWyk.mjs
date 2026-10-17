@@ -1,12 +1,13 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { n as require_react } from "../_libs/@radix-ui/react-compose-refs+[...].mjs";
 import { i as require_jsx_runtime, n as Slot, t as Root } from "../_libs/@radix-ui/react-label+[...].mjs";
+import { t as createServerFn } from "./ssr.mjs";
 import { a as Store, c as Menu, d as LoaderCircle, f as House, h as ArrowRight, i as Sunrise, l as MapPinned, m as Check, n as Wheat, o as ShieldCheck, p as ExternalLink, s as PawPrint, t as X, u as Mail } from "../_libs/lucide-react.mjs";
-import { n as TSS_SERVER_FUNCTION, r as getServerFnById, t as createServerFn } from "./ssr.mjs";
+import { n as Route, r as createSsrRpc } from "./router-CxveHmbu.mjs";
 import { a as requestService, i as TOWNS, n as FACEBOOK_URL, r as MAILTO, t as EMAIL } from "./site-kQ5QAUhw.mjs";
 import { n as clsx, t as cva } from "../_libs/class-variance-authority+clsx.mjs";
 import { t as twMerge } from "../_libs/tailwind-merge.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-BvA03asW.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-BeI8oWyk.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function cn(...inputs) {
@@ -69,18 +70,6 @@ var Textarea = import_react.forwardRef(({ className, ...props }, ref) => {
 	});
 });
 Textarea.displayName = "Textarea";
-var createSsrRpc = (functionId) => {
-	const url = "/_serverFn/" + functionId;
-	const serverFnMeta = { id: functionId };
-	const fn = async (...args) => {
-		return (await getServerFnById(functionId, { origin: "server" }))(...args);
-	};
-	return Object.assign(fn, {
-		url,
-		serverFnMeta,
-		[TSS_SERVER_FUNCTION]: true
-	});
-};
 var SERVICES$1 = {
 	agriculture: "Agriculture",
 	residential: "Residential / inspection",
@@ -588,7 +577,7 @@ function SiteHeader() {
 		]
 	});
 }
-function HomePage() {
+function HomePage({ posts, live }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		id: "top",
 		className: "bg-mist text-ink",
@@ -602,7 +591,10 @@ function HomePage() {
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frankie, {}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Shop, {}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(ServiceArea, {}),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FacebookFeed, {}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FacebookFeed, {
+				posts,
+				live
+			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Contact, {}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(SiteFooter, {})
 		]
@@ -1110,11 +1102,7 @@ function ServiceArea() {
 		})
 	});
 }
-var FACEBOOK_POSTS = ["https://www.facebook.com/61591089806027/posts/122107418271369660", "https://www.facebook.com/61591089806027/posts/122105359971369660"];
-function facebookPostSrc(href) {
-	return "https://www.facebook.com/plugins/post.php?href=" + encodeURIComponent(href) + "&show_text=true&width=500";
-}
-function FacebookFeed() {
+function FacebookFeed({ posts, live }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", {
 		id: "facebook",
 		className: "scroll-mt-24 border-y border-line bg-paper py-20 sm:py-28",
@@ -1133,14 +1121,14 @@ function FacebookFeed() {
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 						className: "mt-4 text-lg text-ink/80",
-						children: "The posts themselves, on this page. Read them here instead of leaving for Facebook."
+						children: live ? "New posts from the Facebook page show up here." : "The posts themselves, on this page. Read them here instead of leaving for Facebook."
 					})
 				]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				className: "mt-10 grid gap-6 lg:grid-cols-2",
-				children: FACEBOOK_POSTS.map((href) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("iframe", {
+				children: posts.map((href) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("iframe", {
 					title: "Aerial Allies Facebook post",
-					src: facebookPostSrc(href),
+					src: "https://www.facebook.com/plugins/post.php?href=" + encodeURIComponent(href) + "&show_text=true&width=500",
 					width: "500",
 					height: "720",
 					className: "h-[720px] w-full rounded-xl border border-line bg-paper",
@@ -1278,7 +1266,11 @@ function SiteFooter() {
 	});
 }
 function Home() {
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HomePage, {});
+	const data = Route.useLoaderData();
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HomePage, {
+		posts: data.posts,
+		live: data.live
+	});
 }
 //#endregion
 export { Home as component };

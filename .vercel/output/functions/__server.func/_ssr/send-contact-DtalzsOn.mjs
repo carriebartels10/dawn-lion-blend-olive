@@ -1,14 +1,7 @@
-import { n as TSS_SERVER_FUNCTION, t as createServerFn } from "./ssr.mjs";
+import { t as createServerFn } from "./ssr.mjs";
+import { t as createServerRpc } from "./createServerRpc-A6pJPYTF.mjs";
 import { t as EMAIL } from "./site-kQ5QAUhw.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/send-contact-D4hf_Ml3.js
-var createServerRpc = (serverFnMeta, splitImportFn) => {
-	const url = "/_serverFn/" + serverFnMeta.id;
-	return Object.assign(splitImportFn, {
-		url,
-		serverFnMeta,
-		[TSS_SERVER_FUNCTION]: true
-	});
-};
+//#region node_modules/.nitro/vite/services/ssr/assets/send-contact-DtalzsOn.js
 var SERVICES = {
 	agriculture: "Agriculture",
 	residential: "Residential / inspection",

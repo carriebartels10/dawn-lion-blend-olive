@@ -1,8 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { HomePage } from "@/components/home-page";
+import { getFacebookPosts } from "@/lib/facebook-posts";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+  loader: () => getFacebookPosts(),
+  component: Home,
+});
 
 function Home() {
-  return <HomePage />;
+  const data = Route.useLoaderData();
+  return <HomePage posts={data.posts} live={data.live} />;
 }

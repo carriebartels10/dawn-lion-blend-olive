@@ -105,7 +105,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-BVPyle3P.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-po084Oox.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -124,10 +124,16 @@ async function getStartManifest(matchedRoutes) {
 		routes: manifestRoutes
 	};
 }
-var manifest = { "3e587c1109a072e229695c96c1580ae6781adecb483cd6de4b99d2b622afcbdd": {
-	functionName: "sendContact_createServerFn_handler",
-	importer: () => import("./send-contact-D4hf_Ml3.mjs")
-} };
+var manifest = {
+	"3e587c1109a072e229695c96c1580ae6781adecb483cd6de4b99d2b622afcbdd": {
+		functionName: "sendContact_createServerFn_handler",
+		importer: () => import("./send-contact-DtalzsOn.mjs")
+	},
+	"4740591a24693fca127d7034a9e60f6d7721d1250574b4f441ad5fff4b8abfd1": {
+		functionName: "getFacebookPosts_createServerFn_handler",
+		importer: () => import("./facebook-posts-B7CjASIG.mjs")
+	}
+};
 async function getServerFnById(id, access) {
 	const serverFnInfo = manifest[id];
 	if (!serverFnInfo) throw new Error("Server function info not found for " + id);
@@ -1530,7 +1536,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-DYf2I61i.mjs").then((n) => n.t),
+		import("./router-CxveHmbu.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);

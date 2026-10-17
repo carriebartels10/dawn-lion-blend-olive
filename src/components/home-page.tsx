@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { EMAIL, FACEBOOK_URL, MAILTO, TOWNS, requestService } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-export function HomePage() {
+export function HomePage({ posts, live }: { posts: string[]; live: boolean }) {
   return (
     <div id="top" className="bg-mist text-ink">
       <SiteHeader />
@@ -30,7 +30,7 @@ export function HomePage() {
       <Frankie />
       <Shop />
       <ServiceArea />
-      <FacebookFeed />
+      <FacebookFeed posts={posts} live={live} />
       <Contact />
       <SiteFooter />
     </div>
@@ -514,20 +514,7 @@ function ServiceArea() {
 }
 
 
-const FACEBOOK_POSTS = [
-  "https://www.facebook.com/61591089806027/posts/122107418271369660",
-  "https://www.facebook.com/61591089806027/posts/122105359971369660",
-];
-
-function facebookPostSrc(href: string) {
-  return (
-    "https://www.facebook.com/plugins/post.php?href=" +
-    encodeURIComponent(href) +
-    "&show_text=true&width=500"
-  );
-}
-
-function FacebookFeed() {
+function FacebookFeed({ posts, live }: { posts: string[]; live: boolean }) {
   return (
     <section id="facebook" className="scroll-mt-24 border-y border-line bg-paper py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -539,16 +526,21 @@ function FacebookFeed() {
             What we just posted.
           </h2>
           <p className="mt-4 text-lg text-ink/80">
-            The posts themselves, on this page. Read them here instead of
-            leaving for Facebook.
+            {live
+              ? "New posts from the Facebook page show up here."
+              : "The posts themselves, on this page. Read them here instead of leaving for Facebook."}
           </p>
         </div>
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          {FACEBOOK_POSTS.map((href) => (
+          {posts.map((href) => (
             <iframe
               key={href}
               title="Aerial Allies Facebook post"
-              src={facebookPostSrc(href)}
+              src={
+                "https://www.facebook.com/plugins/post.php?href=" +
+                encodeURIComponent(href) +
+                "&show_text=true&width=500"
+              }
               width="500"
               height="720"
               className="h-[720px] w-full rounded-xl border border-line bg-paper"
