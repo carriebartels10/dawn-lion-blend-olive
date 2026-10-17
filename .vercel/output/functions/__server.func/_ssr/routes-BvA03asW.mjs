@@ -6,7 +6,7 @@ import { n as TSS_SERVER_FUNCTION, r as getServerFnById, t as createServerFn } f
 import { a as requestService, i as TOWNS, n as FACEBOOK_URL, r as MAILTO, t as EMAIL } from "./site-kQ5QAUhw.mjs";
 import { n as clsx, t as cva } from "../_libs/class-variance-authority+clsx.mjs";
 import { t as twMerge } from "../_libs/tailwind-merge.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-B4eYwYBs.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-BvA03asW.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function cn(...inputs) {
@@ -1110,8 +1110,11 @@ function ServiceArea() {
 		})
 	});
 }
+var FACEBOOK_POSTS = ["https://www.facebook.com/61591089806027/posts/122107418271369660", "https://www.facebook.com/61591089806027/posts/122105359971369660"];
+function facebookPostSrc(href) {
+	return "https://www.facebook.com/plugins/post.php?href=" + encodeURIComponent(href) + "&show_text=true&width=500";
+}
 function FacebookFeed() {
-	const pluginSrc = "https://www.facebook.com/plugins/page.php?href=" + encodeURIComponent("https://www.facebook.com/1146505868554366") + "&tabs=timeline&width=500&height=820&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false";
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", {
 		id: "facebook",
 		className: "scroll-mt-24 border-y border-line bg-paper py-20 sm:py-28",
@@ -1130,26 +1133,25 @@ function FacebookFeed() {
 					}),
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
 						className: "mt-4 text-lg text-ink/80",
-						children: "Photos, flights, and lost-pet updates appear here as soon as they go up on Facebook."
+						children: "The posts themselves, on this page. Read them here instead of leaving for Facebook."
 					})
 				]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-				className: "mt-10 overflow-hidden rounded-xl border border-line bg-mist",
-				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("iframe", {
-					title: "Aerial Allies Facebook posts",
-					src: pluginSrc,
+				className: "mt-10 grid gap-6 lg:grid-cols-2",
+				children: FACEBOOK_POSTS.map((href) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("iframe", {
+					title: "Aerial Allies Facebook post",
+					src: facebookPostSrc(href),
 					width: "500",
-					height: "820",
-					className: "mx-auto block h-[820px] w-full max-w-[500px] bg-paper",
+					height: "720",
+					className: "h-[720px] w-full rounded-xl border border-line bg-paper",
 					style: {
 						border: "none",
 						overflow: "hidden"
 					},
 					scrolling: "no",
 					allow: "autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share",
-					allowFullScreen: true,
-					loading: "lazy"
-				})
+					allowFullScreen: true
+				}, href))
 			})]
 		})
 	});

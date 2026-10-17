@@ -514,12 +514,20 @@ function ServiceArea() {
 }
 
 
-function FacebookFeed() {
-  const pluginSrc =
-    "https://www.facebook.com/plugins/page.php?href=" +
-    encodeURIComponent("https://www.facebook.com/1146505868554366") +
-    "&tabs=timeline&width=500&height=820&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false";
+const FACEBOOK_POSTS = [
+  "https://www.facebook.com/61591089806027/posts/122107418271369660",
+  "https://www.facebook.com/61591089806027/posts/122105359971369660",
+];
 
+function facebookPostSrc(href: string) {
+  return (
+    "https://www.facebook.com/plugins/post.php?href=" +
+    encodeURIComponent(href) +
+    "&show_text=true&width=500"
+  );
+}
+
+function FacebookFeed() {
   return (
     <section id="facebook" className="scroll-mt-24 border-y border-line bg-paper py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -531,23 +539,25 @@ function FacebookFeed() {
             What we just posted.
           </h2>
           <p className="mt-4 text-lg text-ink/80">
-            Photos, flights, and lost-pet updates appear here as soon as they
-            go up on Facebook.
+            The posts themselves, on this page. Read them here instead of
+            leaving for Facebook.
           </p>
         </div>
-        <div className="mt-10 overflow-hidden rounded-xl border border-line bg-mist">
-          <iframe
-            title="Aerial Allies Facebook posts"
-            src={pluginSrc}
-            width="500"
-            height="820"
-            className="mx-auto block h-[820px] w-full max-w-[500px] bg-paper"
-            style={{ border: "none", overflow: "hidden" }}
-            scrolling="no"
-            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-            allowFullScreen
-            loading="lazy"
-          />
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          {FACEBOOK_POSTS.map((href) => (
+            <iframe
+              key={href}
+              title="Aerial Allies Facebook post"
+              src={facebookPostSrc(href)}
+              width="500"
+              height="720"
+              className="h-[720px] w-full rounded-xl border border-line bg-paper"
+              style={{ border: "none", overflow: "hidden" }}
+              scrolling="no"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          ))}
         </div>
       </div>
     </section>
